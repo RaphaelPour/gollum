@@ -15,19 +15,24 @@ var (
 )
 
 type LanguageModel struct {
-	model map[string][]string
+	model       map[string][]string
+	tokenLength int
 }
 
-func NewLanguageModel() LanguageModel {
+func NewLanguageModel(tokenLength int) LanguageModel {
 	return LanguageModel{
-		model: make(map[string][]string),
+		model:       make(map[string][]string),
+		tokenLength: tokenLength,
 	}
 }
 
 func (lm *LanguageModel) Train(input string) {
 	for i, raw := range input {
 		c := string(raw)
-		follower := string(input[(i+1)%len(input)])
+		follower := ""
+		for j := 1; j <= lm.tokenLength; j++ {
+			follower += string(input[(i+j)%len(input)])
+		}
 		if _, ok := lm.model[c]; !ok {
 			lm.model[c] = make([]string, 0)
 		} else if stringInSlice(follower, lm.model[c]) {
@@ -64,7 +69,7 @@ func sample(arr []string) string {
 }
 
 func main() {
-	lm := NewLanguageModel()
+	lm := NewLanguageModel(3)
 	lm.Train(rawInput)
 	fmt.Println(lm)
 	lm.Prompt(prompt)
